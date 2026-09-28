@@ -6,6 +6,7 @@ import AtomButton from "../ui/AtomButton";
 import AtomTextField from "../ui/AtomTextField";
 import AtomSelect from "../ui/AtomSelect";
 import AtomToggle from "../ui/AtomToggle";
+import AtomCheckbox from "../ui/AtomCheckbox";
 import { zonasHorarias } from "../data/calendarios";
 
 const steps = ["Tipo de cita", "Horarios", "Límites", "Flujo de WhatsApp"] as const;
@@ -491,17 +492,12 @@ export default function CreateTipoCitaPage() {
                     const { activo, rangos } = horario[dia];
                     return (
                       <div key={dia} className="flex min-h-[46px] items-center gap-3">
-                        <label className="flex w-[110px] shrink-0 items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={activo}
-                            onChange={() => toggleDia(dia)}
-                            className="size-4 accent-ink"
-                          />
+                        <div className="flex w-[110px] shrink-0 items-center gap-2">
+                          <AtomCheckbox checked={activo} onChange={() => toggleDia(dia)} label={dia} />
                           <span className={`text-sm font-medium ${activo ? "text-ink" : "text-muted-soft"}`}>
                             {dia}
                           </span>
-                        </label>
+                        </div>
                         {activo ? (
                           <div className="flex flex-1 flex-wrap items-center gap-2">
                             {rangos.map((r) => (

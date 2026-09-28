@@ -24,8 +24,9 @@ chip "Filtros", botón primario) + tabla con `AtomTag` para los estados.
   [frame de Figma](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9070-8381))
   también está implementado: tarjetas "Zona horaria" (selector), "Horario semanal"
   (por día: activar/desactivar, agregar o quitar rangos horarios, resumen de días
-  activos y horas semanales, botón "Copiar de Lunes") y "Excepciones" (lista de fechas
-  puntuales con opción de agregar/quitar). El paso 3 ("Límites",
+  activos y horas semanales, botón "Copiar de Lunes", checkbox de día con el estilo
+  `❖ atom-checkbox` del Design System vía `src/ui/AtomCheckbox.tsx`) y "Excepciones"
+  (lista de fechas puntuales con opción de agregar/quitar). El paso 3 ("Límites",
   [frame de Figma](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9070-8381))
   también está implementado: tarjeta "Límites de reserva" con 5 reglas activables/
   desactivables (`AtomToggle`) — "Tiempo entre citas" (preparación antes/después),
