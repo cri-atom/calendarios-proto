@@ -17,16 +17,29 @@ en Figma, usando los tokens y patrones del **Web Library** (Design System de Ato
 Los datos son mock (`src/data/calendarios.ts`) — no hay backend ni persistencia real; es
 un prototipo de interacción/UI para validar el flujo antes de pasar a desarrollo.
 
+## Tipos de cita
+
+Implementada a partir de [este frame](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9102-71311)
+(`/tipos-de-cita`, antes "Tipos de evento"). Tabla con Nombre, Duración, Grupos y Estado
+(tags Borrador/Publicado/Activa/Inactiva), toolbar con búsqueda + filtros, y botón
+"Crear tipo de cita" (el flujo de creación en sí aún no está diseñado en Figma, por eso
+el diálogo que abre es un placeholder).
+
+**Nota de consistencia:** este frame usa una versión más nueva del sidebar del Design
+System (`❖ atom-sidebar-complete`: riel de iconos + panel "Configuraciones" con
+acordeón) distinta del header/sidebar usado en Calendarios y Citas agendadas. Por eso
+"Tipos de cita" vive en su propio `SettingsShell` (`src/components/SettingsShell.tsx`)
+en vez de reusar `AppShell`. Si el equipo confirma que este es el nuevo estándar de
+navegación, migrar Calendarios y Citas agendadas a `SettingsShell` es el siguiente paso.
+
 ## Pendiente (backlog, no implementado en este prototipo)
 
-El archivo de Figma tiene 3 secciones FRD; este prototipo cubre solo **Calendarios**.
-Quedan pendientes, con rutas ya creadas como placeholder en el nav lateral:
+El archivo de Figma tiene 3 secciones FRD. Quedan pendientes:
 
-- **Tipos de evento** (`/tipos-de-evento`): identificación, disponibilidad one-click,
-  límites y flujo de confirmación por WhatsApp.
 - **Citas agendadas** (`/citas-agendadas`): listado y detalle de citas ya agendadas.
 - Dentro de Calendarios: integración con Genesys (mapeo de agentes) y el diálogo de
   "cambios sin guardar".
+- Dentro de Tipos de cita: el flujo de creación/edición de un tipo de cita (wizard).
 
 Para sumar cualquiera de estas, se puede volver a usar el MCP de Figma
 (`get_design_context` sobre el nodeId del frame correspondiente) y seguir el mismo

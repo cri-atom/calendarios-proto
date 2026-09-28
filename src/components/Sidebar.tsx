@@ -35,7 +35,7 @@ const sections = [
 ];
 
 const citasLinks = [
-  { to: "/tipos-de-evento", label: "Tipos de evento" },
+  { to: "/tipos-de-cita", label: "Tipos de cita" },
   { to: "/calendarios", label: "Calendarios" },
   { to: "/citas-agendadas", label: "Citas agendadas" },
 ];
