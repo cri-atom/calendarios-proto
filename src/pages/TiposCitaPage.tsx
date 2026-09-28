@@ -4,7 +4,9 @@ import SettingsShell from "../components/SettingsShell";
 import AtomButton from "../ui/AtomButton";
 import AtomTag from "../ui/AtomTag";
 import { tiposCitaIniciales, type TipoCita } from "../data/tiposCita";
-import { Search, SlidersHorizontal, ChevronDown, MoreVertical } from "lucide-react";
+import { Search, SlidersHorizontal, ChevronDown, MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
+import AtomIconButton from "../ui/AtomIconButton";
+import AtomSelect from "../ui/AtomSelect";
 
 const tagVariant: Record<TipoCita["estado"], "neutral" | "success"> = {
   Borrador: "neutral",
@@ -30,8 +32,8 @@ export default function TiposCitaPage() {
     <SettingsShell>
       <div className="flex h-full flex-1 flex-col overflow-hidden bg-page">
         <div className="flex flex-col items-start px-4 pb-2 pt-4">
-          <h1 className="text-base font-bold text-ink">Tipos de cita</h1>
-          <p className="text-xs text-muted-soft">
+          <h1 className="text-xl font-bold text-ink">Tipos de cita</h1>
+          <p className="text-sm text-muted">
             Configura los distintos tipos de cita que tus asesores pueden ofrecer.
           </p>
         </div>
@@ -72,7 +74,8 @@ export default function TiposCitaPage() {
         </div>
 
         <div className="flex flex-1 flex-col overflow-hidden px-4 pb-4">
-          <div className="flex flex-1 flex-col overflow-auto rounded-lg border border-border">
+          <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-border">
+          <div className="flex-1 overflow-auto">
             <table className="w-full border-collapse text-left">
               <thead className="sticky top-0 bg-white">
                 <tr className="text-xs font-bold text-ink-secondary">
@@ -122,6 +125,30 @@ export default function TiposCitaPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="flex shrink-0 items-center justify-between border-t border-border px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted">Registros por página</span>
+              <AtomSelect value="10" onChange={() => {}} className="!w-16">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </AtomSelect>
+            </div>
+            <span className="text-xs text-muted">
+              {filtrados.length === 0 ? 0 : 1}–{Math.min(10, filtrados.length)} de {filtrados.length} registros ·
+              Página 1 de {Math.max(1, Math.ceil(filtrados.length / 10))}
+            </span>
+            <div className="flex items-center gap-1">
+              <AtomIconButton icon={<ChevronLeft size={16} />} label="Página anterior" disabled />
+              <AtomIconButton
+                icon={<ChevronRight size={16} />}
+                label="Página siguiente"
+                disabled={filtrados.length <= 10}
+              />
+            </div>
+          </div>
           </div>
         </div>
       </div>

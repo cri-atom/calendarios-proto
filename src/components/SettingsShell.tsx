@@ -1,33 +1,61 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import {
   PanelLeftClose,
   Home,
-  Bell,
-  Search,
   MessageSquare,
-  BookUser,
+  Table2,
+  Headphones,
+  Calendar,
+  UserX,
   Megaphone,
   Workflow,
-  Activity,
   MessageCircle,
+  MessagesSquare,
+  Search,
+  Bell,
   HelpCircle,
-  Settings,
+  LifeBuoy,
+  Mail,
+  BookOpen,
+  Sparkles,
+  Users,
+  BarChart3,
+  Building2,
+  Database,
+  CalendarDays,
   ChevronDown,
   ChevronUp,
+  type LucideIcon,
 } from "lucide-react";
 
-const railIcons = [PanelLeftClose, Home, Bell, Search, MessageSquare, BookUser, Megaphone, Workflow, Activity, MessageCircle];
+const railIcons: LucideIcon[] = [
+  Home,
+  MessageSquare,
+  Table2,
+  Headphones,
+  Calendar,
+  UserX,
+  Megaphone,
+  Workflow,
+  MessageCircle,
+  MessagesSquare,
+];
 
-const accordionSections = [
-  "Plataforma",
-  "Mensajería",
-  "Conversaciones",
-  "Magia de atom",
-  "Gestión usuarios",
-  "Reportes",
-  "Mi empresa",
-  "Gestor de recursos",
+interface NavGroup {
+  label: string;
+  icon: LucideIcon;
+}
+
+const navGroups: NavGroup[] = [
+  { label: "Plataforma", icon: LifeBuoy },
+  { label: "Mensajería", icon: Mail },
+  { label: "Conversaciones", icon: BookOpen },
+  { label: "Magia de Atom", icon: Sparkles },
+  { label: "Gestión usuarios", icon: Users },
+  { label: "Reportes", icon: BarChart3 },
+  { label: "Mi Empresa", icon: Building2 },
+  { label: "Gestor de recursos", icon: Database },
 ];
 
 const citasLinks = [
@@ -37,67 +65,86 @@ const citasLinks = [
 ];
 
 export default function SettingsShell({ children }: { children: ReactNode }) {
+  const [citasOpen, setCitasOpen] = useState(true);
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-page text-ink">
-      <div className="flex h-full shrink-0 items-start bg-[#f5f5f4] p-2">
-        <div className="flex h-full flex-col items-center justify-between p-2">
-          <div className="flex flex-col items-center gap-10">
-            <div className="flex size-8 items-center justify-center rounded-lg p-1">
-              <div className="flex size-6 items-center justify-center rounded-md bg-brand text-[11px] font-bold text-white">
-                A
-              </div>
-            </div>
-            <div className="flex flex-col items-start gap-1">
-              {railIcons.map((Icon, i) => (
-                <button
-                  key={i}
-                  className="flex size-8 items-center justify-center overflow-hidden rounded-lg text-ink hover:bg-white"
-                >
-                  <Icon size={16} strokeWidth={1.75} />
-                </button>
-              ))}
-            </div>
+      <div className="flex h-full shrink-0 flex-col border-r border-border-soft bg-rail-bg">
+        <div className="flex size-16 shrink-0 items-center justify-center border-b border-border-soft">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-brand text-xs font-bold text-white">
+            A
           </div>
-          <div className="flex flex-col items-center justify-center gap-2">
-            <button className="flex size-8 items-center justify-center rounded-lg text-ink hover:bg-white">
-              <HelpCircle size={16} strokeWidth={1.75} />
+        </div>
+        <div className="flex flex-1 flex-col justify-between overflow-y-auto">
+          <div className="flex flex-col">
+            <button
+              aria-label="Colapsar panel"
+              className="flex h-10 items-center justify-end border-b border-border-soft px-5 text-ink hover:text-brand"
+            >
+              <PanelLeftClose size={20} strokeWidth={1.75} />
             </button>
-            <button className="flex size-8 items-center justify-center rounded-lg bg-brand-soft text-[#a44200]">
-              <Settings size={16} strokeWidth={1.75} />
+            {railIcons.map((Icon, i) => (
+              <button
+                key={i}
+                className="flex h-12 w-16 items-center justify-center text-ink-secondary hover:bg-surface-subtle hover:text-brand"
+              >
+                <Icon size={20} strokeWidth={1.75} />
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-col border-t border-border-soft">
+            <button className="flex h-12 w-16 items-center justify-center text-ink-secondary hover:bg-surface-subtle hover:text-brand">
+              <Search size={20} strokeWidth={1.75} />
             </button>
-            <div className="relative flex size-8 items-center justify-center rounded-xl border-2 border-surface-quaternary bg-surface-muted text-[12px] text-ink">
-              RM
-              <span className="absolute bottom-[3px] right-[3px] size-2 rounded-full border border-surface-muted bg-[#00c951]" />
-            </div>
+            <button className="flex h-12 w-16 items-center justify-center text-ink-secondary hover:bg-surface-subtle hover:text-brand">
+              <Bell size={20} strokeWidth={1.75} />
+            </button>
+            <button className="flex h-12 w-16 items-center justify-center">
+              <span className="flex size-6 items-center justify-center rounded-full bg-surface-subtle text-[9px] font-medium text-ink-secondary">
+                MA
+              </span>
+            </button>
+            <button className="flex h-12 w-16 items-center justify-center text-ink-secondary hover:bg-surface-subtle hover:text-brand">
+              <HelpCircle size={20} strokeWidth={1.75} />
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="flex h-full w-56 shrink-0 flex-col gap-4 border-l border-surface-quaternary bg-[#f5f5f4] px-2 py-6">
-        <div className="px-2 text-base font-bold text-ink">Configuraciones</div>
-        <div className="flex flex-col">
-          {accordionSections.map((s) => (
-            <button
-              key={s}
-              className="flex items-center justify-between rounded p-2 text-xs font-medium text-[#52525c] hover:bg-white/60"
-            >
-              {s}
-              <ChevronDown size={14} />
-            </button>
-          ))}
-          <div className="flex flex-col">
-            <button className="flex items-center justify-between rounded p-2 text-xs font-medium text-ink">
-              Citas
-              <ChevronUp size={14} />
-            </button>
-            <div className="flex flex-col border-l border-border-soft pl-2">
+      <div className="flex h-full w-[216px] shrink-0 flex-col gap-5 overflow-y-auto border-r border-border-soft bg-surface-subtle px-6 py-6">
+        {navGroups.map(({ label, icon: Icon }) => (
+          <button
+            key={label}
+            className="flex items-center gap-2 text-xs font-medium text-ink-secondary hover:text-ink"
+          >
+            <Icon size={20} strokeWidth={1.75} className="shrink-0" />
+            <span className="flex-1 text-left">{label}</span>
+            <ChevronDown size={20} strokeWidth={1.75} className="shrink-0" />
+          </button>
+        ))}
+
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => setCitasOpen((o) => !o)}
+            className="flex items-center gap-2 text-xs font-medium text-ink-secondary hover:text-ink"
+          >
+            <CalendarDays size={20} strokeWidth={1.75} className="shrink-0" />
+            <span className="flex-1 text-left">Citas</span>
+            {citasOpen ? (
+              <ChevronUp size={20} strokeWidth={1.75} className="shrink-0" />
+            ) : (
+              <ChevronDown size={20} strokeWidth={1.75} className="shrink-0" />
+            )}
+          </button>
+          {citasOpen && (
+            <div className="flex flex-col">
               {citasLinks.map((link) => (
                 <NavLink
                   key={link.to}
                   to={link.to}
                   className={({ isActive }) =>
-                    `rounded px-2 py-2 text-xs font-normal ${
-                      isActive ? "bg-brand-soft text-[#a44200]" : "text-[#52525c] hover:bg-white/60"
+                    `rounded-lg px-2 py-2 text-xs ${
+                      isActive ? "bg-white font-normal text-brand" : "font-normal text-ink-secondary hover:bg-white/60"
                     }`
                   }
                 >
@@ -105,7 +152,7 @@ export default function SettingsShell({ children }: { children: ReactNode }) {
                 </NavLink>
               ))}
             </div>
-          </div>
+          )}
         </div>
       </div>
 

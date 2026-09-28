@@ -6,15 +6,25 @@ en Figma, usando los tokens y patrones del **Web Library** (Design System de Ato
 
 ## Qué incluye
 
-Las 3 secciones del FRD comparten un mismo shell (`src/components/SettingsShell.tsx`):
-riel de iconos + panel "Configuraciones" con acordeón, tal como viene definido en el
-componente `❖ atom-sidebar-complete` del Design System (frame de referencia:
-[Tipos de cita](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9102-71311)).
-Cada página sigue el mismo patrón de encabezado + toolbar (buscador que se expande,
-chip "Filtros", botón primario) + tabla con `AtomTag` para los estados.
+Las 3 secciones del FRD comparten un mismo shell (`src/components/SettingsShell.tsx`),
+reconstruido a partir del sidebar completo real de AtomChat que aparece en la sección
+"Migración a DS" del canvas
+[FRD - Mejoras UX](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9070-8382)
+(frame `configuraciones-citas`, id 9072:16611): riel de íconos de 64px (logo, íconos de
+navegación general sin ruteo real, cluster inferior con buscador/notificaciones/avatar/
+ayuda) + panel de 216px con los 9 grupos de nivel superior del producto (Plataforma,
+Mensajería, Conversaciones, Magia de Atom, Gestión usuarios, Reportes, Mi Empresa,
+Gestor de recursos, Citas) cada uno con su ícono; solo "Citas" está expandido y enlaza
+a las 3 páginas del prototipo (los demás grupos son decorativos, sin contenido en este
+prototipo). El ítem activo se resalta con fondo blanco y texto naranja, igual que en el
+frame. Cada página sigue el mismo patrón de encabezado + toolbar (buscador que se
+expande, chip "Filtros", botón primario) + tabla con `AtomTag` para los estados.
 
 - **Tipos de cita** (`/tipos-de-cita`): tabla con Nombre, Duración, Grupos y Estado
-  (Borrador/Publicado/Activa/Inactiva). Botón "Crear tipo de cita" abre el asistente de
+  (Borrador/Publicado/Activa/Inactiva) y barra de paginación ("Registros por página",
+  contador de registros y controles anterior/siguiente), igual que el frame
+  `configuraciones-citas` de "Migración a DS" mencionado arriba. Botón "Crear tipo de
+  cita" abre el asistente de
   creación en pantalla completa (`/tipos-de-cita/crear`), con 4 pasos (Tipo de cita →
   Horarios → Límites → Flujo de WhatsApp). El encabezado del wizard sigue el diseño del
   canvas "FRD - Mejoras UX › Propuesta 1" (frame de referencia para Horarios y Límites,
