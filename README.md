@@ -15,28 +15,34 @@ chip "Filtros", botón primario) + tabla con `AtomTag` para los estados.
 
 - **Tipos de cita** (`/tipos-de-cita`): tabla con Nombre, Duración, Grupos y Estado
   (Borrador/Publicado/Activa/Inactiva). Botón "Crear tipo de cita" abre el asistente de
-  creación en pantalla completa (`/tipos-de-cita/crear`,
-  [frame de Figma](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9102-70224)):
-  stepper de 4 pasos (Tipo de cita → Horarios → Límites → Flujo de WhatsApp). El paso 1
-  ("Tipo de cita") está implementado fiel al diseño: tarjetas "Tipo de cita" (nombre,
-  descripción, duración) y "Asignación" (canal, grupo, método de asignación manual/
-  automática). El paso 2 ("Horarios",
+  creación en pantalla completa (`/tipos-de-cita/crear`), con 4 pasos (Tipo de cita →
+  Horarios → Límites → Flujo de WhatsApp). El encabezado del wizard sigue el diseño del
+  canvas "FRD - Mejoras UX › Propuesta 1" (frame de referencia para Horarios y Límites,
+  [Figma](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9070-8381)):
+  título + subtítulo, "Paso X de 4" con barra de progreso y fila con los 4 labels de
+  pasos (el activo resaltado en naranja). No se replicó la fila superior con el
+  selector "1 - Unificar el tratamiento al cliente" (+ botones para agregar/quitar
+  HU): es un control de autoría del FRD para navegar entre propuestas dentro de
+  Figma, no un elemento de la interfaz del producto. El footer también sigue ese
+  diseño: "Atrás" a la izquierda y "Guardar borrador" + "Continuar" (con ícono de
+  flecha) agrupados a la derecha.
+  El paso 1 ("Tipo de cita",
+  [frame de Figma](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9102-70224))
+  está implementado fiel al diseño de esa tarjeta: "Tipo de cita" (nombre, descripción,
+  duración) y "Asignación" (canal, grupo, método de asignación manual/automática). El
+  paso 2 ("Horarios",
   [frame de Figma](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9070-8381))
   también está implementado: tarjetas "Zona horaria" (selector), "Horario semanal"
-  (por día: activar/desactivar, agregar o quitar rangos horarios, resumen de días
-  activos y horas semanales, botón "Copiar de Lunes", checkbox de día con el estilo
-  `❖ atom-checkbox` del Design System vía `src/ui/AtomCheckbox.tsx`) y "Excepciones"
-  (lista de fechas puntuales con opción de agregar/quitar). El paso 3 ("Límites",
-  [frame de Figma](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9070-8381))
-  también está implementado: tarjeta "Límites de reserva" con 5 reglas activables/
-  desactivables (`AtomToggle`) — "Tiempo entre citas" (preparación antes/después),
-  "Anticipación mínima", "Cupos por horario", "Máximo de citas activas por persona" y
-  "Ventana futura" — cada una revela su(s) selector(es) o campo numérico solo cuando
-  está activa. Igual que Horarios, ese frame vive en el canvas "FRD - Mejoras UX ›
-  Propuesta 1" con el header de barra de progreso + selector de HU; se mantuvo el
-  header/stepper de círculos numerados ya construido por consistencia dentro del
-  wizard, y solo se tomó el contenido de la tarjeta de ese frame. El paso 4 todavía no
-  tiene frame conectado — queda como tarjeta placeholder dentro del mismo stepper.
+  (por día: activar/desactivar con `❖ atom-checkbox` vía `src/ui/AtomCheckbox.tsx`,
+  agregar o quitar rangos horarios, resumen de días activos y horas semanales, botón
+  "Copiar de otro tipo") y "Excepciones" (lista de fechas puntuales con opción de
+  agregar/quitar). El paso 3 ("Límites", mismo frame de Figma) también está
+  implementado: tarjeta "Límites de reserva" con 5 reglas activables/desactivables
+  (`AtomToggle`) — "Tiempo entre citas" (preparación antes/después), "Anticipación
+  mínima", "Cupos por horario", "Máximo de citas activas por persona" y "Ventana
+  futura" — cada una revela su(s) selector(es) o campo numérico solo cuando está
+  activa. El paso 4 todavía no tiene frame conectado — queda como tarjeta placeholder
+  dentro del mismo wizard.
 - **Calendarios** (`/calendarios`): tabla de usuarios con calendario habilitado
   (buscador, filtros, estado Activo/Inactivo). Incluye:
   - Wizard funcional **"Crear usuario externo"** de 4 pasos (Identificación →

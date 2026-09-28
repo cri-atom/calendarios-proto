@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, Trash2, X } from "lucide-react";
 import SettingsShell from "../components/SettingsShell";
 import AtomButton from "../ui/AtomButton";
 import AtomTextField from "../ui/AtomTextField";
@@ -138,13 +138,13 @@ function ScheduleCard({
   children: ReactNode;
 }) {
   return (
-    <div className="flex w-full max-w-[700px] flex-col gap-5 rounded-2xl border border-border bg-white p-6 shadow-sm">
+    <div className="flex w-[720px] max-w-full flex-col gap-5 rounded-2xl border border-border bg-white p-6 shadow-[0px_2px_4px_0px_rgba(9,9,11,0.08)]">
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xl font-bold tracking-tight text-ink">{title}</p>
+          <p className="text-[28px] font-bold leading-8 tracking-[-0.56px] text-ink">{title}</p>
           {action}
         </div>
-        <p className="text-sm text-muted">{subtitle}</p>
+        <p className="text-base text-muted">{subtitle}</p>
       </div>
       {children}
     </div>
@@ -339,39 +339,40 @@ export default function CreateTipoCitaPage() {
   return (
     <SettingsShell>
       <div className="flex h-full flex-1 flex-col overflow-hidden bg-page">
-        <div className="flex items-center gap-2 px-4 pb-2 pt-4">
-          <button
-            onClick={goToList}
-            aria-label="Volver"
-            className="flex size-6 items-center justify-center rounded-lg text-ink hover:bg-surface-muted"
-          >
-            <ArrowLeft size={16} />
-          </button>
-          <h1 className="text-base font-bold text-ink">Crear tipo de cita</h1>
+        <div className="flex flex-col gap-1 px-8 pb-4 pt-6">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={goToList}
+              aria-label="Volver"
+              className="flex size-6 items-center justify-center rounded-lg text-ink hover:bg-surface-muted"
+            >
+              <ArrowLeft size={16} />
+            </button>
+            <h1 className="text-xl font-bold text-ink">Crear tipo de cita</h1>
+          </div>
+          <p className="pl-8 text-sm text-muted">Configura cuándo puede reservarse esta experiencia.</p>
         </div>
 
-        <div className="flex h-[60px] shrink-0 items-center px-4 py-2">
-          <div className="flex flex-1 items-center">
+        <div className="flex shrink-0 flex-col gap-2 px-8 pb-4">
+          <p className="text-xs font-bold text-ink">
+            Paso {stepIndex + 1} de {steps.length}
+          </p>
+          <div className="h-1 w-full overflow-hidden rounded-full bg-surface-quaternary">
+            <div
+              className="h-full rounded-full bg-ink transition-all"
+              style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between">
             {steps.map((s, i) => {
               const active = i === stepIndex;
               return (
-                <div
+                <span
                   key={s}
-                  className={`flex h-11 items-center gap-1 border-b-4 px-2 pb-3 pt-2 ${
-                    i === 0 ? "shrink-0" : "flex-1 justify-end"
-                  } ${active ? "border-[#ff9d5b]" : "border-border"}`}
+                  className={`text-xs ${active ? "font-bold text-brand" : "text-muted"}`}
                 >
-                  <span
-                    className={`flex size-6 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${
-                      active ? "bg-brand text-white" : "border-2 border-border-soft bg-surface-subtle text-muted"
-                    }`}
-                  >
-                    {i + 1}
-                  </span>
-                  <span className={`whitespace-nowrap text-xs ${active ? "font-bold text-ink" : "text-muted"}`}>
-                    {s}
-                  </span>
-                </div>
+                  {i + 1}. {s}
+                </span>
               );
             })}
           </div>
@@ -482,7 +483,7 @@ export default function CreateTipoCitaPage() {
                 subtitle="Puedes agregar más de un rango por día."
                 action={
                   <AtomButton variant="secondary" onClick={copiarDeLunes}>
-                    Copiar de Lunes
+                    Copiar de otro tipo
                   </AtomButton>
                 }
               >
@@ -720,13 +721,21 @@ export default function CreateTipoCitaPage() {
           )}
         </div>
 
-        <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border bg-page p-4">
+        <div className="flex shrink-0 items-center justify-between border-t border-border bg-page px-8 py-4">
           <AtomButton variant="secondary" onClick={handleBack}>
             {stepIndex === 0 ? "Cancelar" : "Atrás"}
           </AtomButton>
-          <AtomButton variant="primary" disabled={!canContinue} onClick={handleContinue}>
-            {stepIndex === steps.length - 1 ? "Crear tipo de cita" : "Continuar"}
-          </AtomButton>
+          <div className="flex items-center gap-2">
+            <AtomButton variant="secondary">Guardar borrador</AtomButton>
+            <AtomButton
+              variant="primary"
+              disabled={!canContinue}
+              onClick={handleContinue}
+              icon={<ArrowRight size={14} />}
+            >
+              {stepIndex === steps.length - 1 ? "Crear tipo de cita" : "Continuar"}
+            </AtomButton>
+          </div>
         </div>
       </div>
     </SettingsShell>
