@@ -14,8 +14,14 @@ Cada página sigue el mismo patrón de encabezado + toolbar (buscador que se exp
 chip "Filtros", botón primario) + tabla con `AtomTag` para los estados.
 
 - **Tipos de cita** (`/tipos-de-cita`): tabla con Nombre, Duración, Grupos y Estado
-  (Borrador/Publicado/Activa/Inactiva). Botón "Crear tipo de cita" abre un diálogo
-  placeholder — ese flujo de creación todavía no está diseñado en Figma.
+  (Borrador/Publicado/Activa/Inactiva). Botón "Crear tipo de cita" abre el asistente de
+  creación en pantalla completa (`/tipos-de-cita/crear`,
+  [frame de Figma](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9102-70224)):
+  stepper de 4 pasos (Tipo de cita → Horarios → Límites → Flujo de WhatsApp). El paso 1
+  ("Tipo de cita") está implementado fiel al diseño: tarjetas "Tipo de cita" (nombre,
+  descripción, duración) y "Asignación" (canal, grupo, método de asignación manual/
+  automática). Los pasos 2 a 4 todavía no tienen frame en Figma — quedan como tarjetas
+  placeholder dentro del mismo stepper, listas para conectarse cuando existan.
 - **Calendarios** (`/calendarios`): tabla de usuarios con calendario habilitado
   (buscador, filtros, estado Activo/Inactivo). Incluye:
   - Wizard funcional **"Crear usuario externo"** de 4 pasos (Identificación →
@@ -35,7 +41,8 @@ prototipo de interacción/UI para validar los flujos antes de pasar a desarrollo
 
 - Dentro de Calendarios: integración con Genesys (mapeo de agentes) y el diálogo de
   "cambios sin guardar".
-- Dentro de Tipos de cita: el flujo de creación/edición de un tipo de cita (wizard).
+- Dentro de Tipos de cita: los pasos 2 a 4 del wizard de creación (Horarios, Límites,
+  Flujo de WhatsApp) y el flujo de edición de un tipo de cita existente.
 - Citas agendadas: no tiene frame propio en Figma aún — cuando exista, reemplazar los
   datos mock por el diseño real con el mismo flujo de `get_design_context`.
 

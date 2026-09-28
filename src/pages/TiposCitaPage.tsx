@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import SettingsShell from "../components/SettingsShell";
 import AtomButton from "../ui/AtomButton";
 import AtomTag from "../ui/AtomTag";
-import AtomDialog from "../ui/AtomDialog";
 import { tiposCitaIniciales, type TipoCita } from "../data/tiposCita";
 import { Search, SlidersHorizontal, ChevronDown, MoreVertical } from "lucide-react";
 
@@ -14,12 +14,12 @@ const tagVariant: Record<TipoCita["estado"], "neutral" | "success"> = {
 };
 
 export default function TiposCitaPage() {
+  const navigate = useNavigate();
   const [tipos] = useState<TipoCita[]>(tiposCitaIniciales);
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [filtrosActivo, setFiltrosActivo] = useState(false);
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
-  const [crearOpen, setCrearOpen] = useState(false);
 
   const filtrados = useMemo(
     () => tipos.filter((t) => t.nombre.toLowerCase().includes(query.toLowerCase())),
@@ -66,7 +66,7 @@ export default function TiposCitaPage() {
               Filtros
             </button>
           </div>
-          <AtomButton variant="primary" onClick={() => setCrearOpen(true)}>
+          <AtomButton variant="primary" onClick={() => navigate("/tipos-de-cita/crear")}>
             Crear tipo de cita
           </AtomButton>
         </div>
@@ -125,22 +125,6 @@ export default function TiposCitaPage() {
           </div>
         </div>
       </div>
-
-      <AtomDialog
-        title="Crear tipo de cita"
-        open={crearOpen}
-        onClose={() => setCrearOpen(false)}
-        actions={
-          <AtomButton variant="secondary" onClick={() => setCrearOpen(false)}>
-            Cerrar
-          </AtomButton>
-        }
-      >
-        <p className="pb-4 text-xs text-muted-soft">
-          El flujo de creación de un tipo de cita todavía no fue diseñado en Figma — este botón queda listo para
-          conectarse en cuanto exista ese frame.
-        </p>
-      </AtomDialog>
     </SettingsShell>
   );
 }
