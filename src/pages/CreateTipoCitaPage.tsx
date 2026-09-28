@@ -5,6 +5,7 @@ import SettingsShell from "../components/SettingsShell";
 import AtomButton from "../ui/AtomButton";
 import AtomTextField from "../ui/AtomTextField";
 import AtomSelect from "../ui/AtomSelect";
+import AtomToggle from "../ui/AtomToggle";
 import { zonasHorarias } from "../data/calendarios";
 
 const steps = ["Tipo de cita", "Horarios", "Límites", "Flujo de WhatsApp"] as const;
@@ -149,6 +150,74 @@ function ScheduleCard({
   );
 }
 
+interface LimitesState {
+  tiempoEntreCitas: { activo: boolean; antes: string; despues: string };
+  anticipacionMinima: { activo: boolean; valor: string };
+  cuposPorHorario: { activo: boolean; maximo: string };
+  maxCitasPorPersona: { activo: boolean; maximo: string };
+  ventanaFutura: { activo: boolean; valor: string };
+}
+
+const limitesIniciales: LimitesState = {
+  tiempoEntreCitas: { activo: true, antes: "15", despues: "15" },
+  anticipacionMinima: { activo: true, valor: "2h" },
+  cuposPorHorario: { activo: true, maximo: "4" },
+  maxCitasPorPersona: { activo: false, maximo: "1" },
+  ventanaFutura: { activo: true, valor: "60" },
+};
+
+const opcionesMinutos = [
+  { value: "0", label: "Sin preparación" },
+  { value: "5", label: "5 minutos" },
+  { value: "10", label: "10 minutos" },
+  { value: "15", label: "15 minutos" },
+  { value: "30", label: "30 minutos" },
+  { value: "45", label: "45 minutos" },
+  { value: "60", label: "60 minutos" },
+];
+
+const opcionesAnticipacion = [
+  { value: "30m", label: "30 minutos de anticipación" },
+  { value: "1h", label: "1 hora de anticipación" },
+  { value: "2h", label: "2 horas de anticipación" },
+  { value: "4h", label: "4 horas de anticipación" },
+  { value: "24h", label: "24 horas de anticipación" },
+];
+
+const opcionesVentanaFutura = [
+  { value: "30", label: "30 días" },
+  { value: "60", label: "60 días" },
+  { value: "90", label: "90 días" },
+  { value: "180", label: "180 días" },
+];
+
+function OptionalRule({
+  title,
+  subtitle,
+  activo,
+  onToggle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  activo: boolean;
+  onToggle: (activo: boolean) => void;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="flex w-full flex-col gap-3.5 rounded-lg border border-border-soft p-4">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-1 flex-col gap-0.5">
+          <p className="text-base font-medium text-ink">{title}</p>
+          <p className="text-sm text-muted">{subtitle}</p>
+        </div>
+        <AtomToggle checked={activo} onChange={onToggle} label={title} />
+      </div>
+      {activo && children}
+    </div>
+  );
+}
+
 function AtomRadioOption({
   name,
   checked,
@@ -186,6 +255,7 @@ export default function CreateTipoCitaPage() {
   const [zonaHoraria, setZonaHoraria] = useState(zonasHorarias[0]);
   const [horario, setHorario] = useState<HorarioSemanal>(horarioInicial);
   const [excepciones, setExcepciones] = useState<Excepcion[]>(excepcionesIniciales);
+  const [limites, setLimites] = useState<LimitesState>(limitesIniciales);
 
   const stepIndex = steps.indexOf(step);
 
@@ -505,7 +575,146 @@ export default function CreateTipoCitaPage() {
             </>
           )}
 
-          {step !== "Tipo de cita" && step !== "Horarios" && (
+          {step === "Límites" && (
+            <ScheduleCard title="Límites de reserva" subtitle="Las reglas desactivadas no afectan la disponibilidad.">
+              <OptionalRule
+                title="Tiempo entre citas"
+                subtitle="Deja preparación antes y después de cada atención."
+                activo={limites.tiempoEntreCitas.activo}
+                onToggle={(activo) =>
+                  setLimites((l) => ({ ...l, tiempoEntreCitas: { ...l.tiempoEntreCitas, activo } }))
+                }
+              >
+                <div className="flex gap-3">
+                  <AtomSelect
+                    label="Antes"
+                    value={limites.tiempoEntreCitas.antes}
+                    onChange={(e) =>
+                      setLimites((l) => ({
+                        ...l,
+                        tiempoEntreCitas: { ...l.tiempoEntreCitas, antes: e.target.value },
+                      }))
+                    }
+                  >
+                    {opcionesMinutos.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </AtomSelect>
+                  <AtomSelect
+                    label="Después"
+                    value={limites.tiempoEntreCitas.despues}
+                    onChange={(e) =>
+                      setLimites((l) => ({
+                        ...l,
+                        tiempoEntreCitas: { ...l.tiempoEntreCitas, despues: e.target.value },
+                      }))
+                    }
+                  >
+                    {opcionesMinutos.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </AtomSelect>
+                </div>
+              </OptionalRule>
+
+              <OptionalRule
+                title="Anticipación mínima"
+                subtitle="Evita reservas de último minuto."
+                activo={limites.anticipacionMinima.activo}
+                onToggle={(activo) =>
+                  setLimites((l) => ({ ...l, anticipacionMinima: { ...l.anticipacionMinima, activo } }))
+                }
+              >
+                <AtomSelect
+                  label="Reservar con al menos"
+                  value={limites.anticipacionMinima.valor}
+                  onChange={(e) =>
+                    setLimites((l) => ({
+                      ...l,
+                      anticipacionMinima: { ...l.anticipacionMinima, valor: e.target.value },
+                    }))
+                  }
+                >
+                  {opcionesAnticipacion.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </AtomSelect>
+              </OptionalRule>
+
+              <OptionalRule
+                title="Cupos por horario"
+                subtitle="Atenciones simultáneas para este tipo de cita."
+                activo={limites.cuposPorHorario.activo}
+                onToggle={(activo) =>
+                  setLimites((l) => ({ ...l, cuposPorHorario: { ...l.cuposPorHorario, activo } }))
+                }
+              >
+                <AtomTextField
+                  label="Cupos máximos"
+                  type="number"
+                  min={1}
+                  value={limites.cuposPorHorario.maximo}
+                  onChange={(e) =>
+                    setLimites((l) => ({
+                      ...l,
+                      cuposPorHorario: { ...l.cuposPorHorario, maximo: e.target.value },
+                    }))
+                  }
+                />
+              </OptionalRule>
+
+              <OptionalRule
+                title="Máximo de citas activas por persona"
+                subtitle="Limita reservas futuras del mismo contacto."
+                activo={limites.maxCitasPorPersona.activo}
+                onToggle={(activo) =>
+                  setLimites((l) => ({ ...l, maxCitasPorPersona: { ...l.maxCitasPorPersona, activo } }))
+                }
+              >
+                <AtomTextField
+                  label="Máximo permitido"
+                  type="number"
+                  min={1}
+                  value={limites.maxCitasPorPersona.maximo}
+                  onChange={(e) =>
+                    setLimites((l) => ({
+                      ...l,
+                      maxCitasPorPersona: { ...l.maxCitasPorPersona, maximo: e.target.value },
+                    }))
+                  }
+                />
+              </OptionalRule>
+
+              <OptionalRule
+                title="Ventana futura"
+                subtitle="Hasta qué fecha puede reservar el cliente."
+                activo={limites.ventanaFutura.activo}
+                onToggle={(activo) => setLimites((l) => ({ ...l, ventanaFutura: { ...l.ventanaFutura, activo } }))}
+              >
+                <AtomSelect
+                  label="Permitir reservas hasta"
+                  value={limites.ventanaFutura.valor}
+                  onChange={(e) =>
+                    setLimites((l) => ({ ...l, ventanaFutura: { ...l.ventanaFutura, valor: e.target.value } }))
+                  }
+                >
+                  {opcionesVentanaFutura.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </AtomSelect>
+              </OptionalRule>
+            </ScheduleCard>
+          )}
+
+          {step !== "Tipo de cita" && step !== "Horarios" && step !== "Límites" && (
             <AtomCard title={step}>
               <p className="text-xs text-muted-soft">
                 Este paso todavía no fue diseñado en Figma — la navegación del asistente queda lista para

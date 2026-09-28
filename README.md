@@ -25,12 +25,17 @@ chip "Filtros", botón primario) + tabla con `AtomTag` para los estados.
   también está implementado: tarjetas "Zona horaria" (selector), "Horario semanal"
   (por día: activar/desactivar, agregar o quitar rangos horarios, resumen de días
   activos y horas semanales, botón "Copiar de Lunes") y "Excepciones" (lista de fechas
-  puntuales con opción de agregar/quitar). Ese frame vive en un canvas distinto
-  ("FRD - Mejoras UX › Propuesta 1") que usa un header de stepper diferente (barra de
-  progreso + selector de HU); se mantuvo el header/stepper de círculos numerados ya
-  construido en el paso 1 por consistencia dentro del wizard, y solo se tomó el
-  contenido de las tarjetas de ese frame. Los pasos 3 y 4 todavía no tienen frame
-  conectado — quedan como tarjetas placeholder dentro del mismo stepper.
+  puntuales con opción de agregar/quitar). El paso 3 ("Límites",
+  [frame de Figma](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9070-8381))
+  también está implementado: tarjeta "Límites de reserva" con 5 reglas activables/
+  desactivables (`AtomToggle`) — "Tiempo entre citas" (preparación antes/después),
+  "Anticipación mínima", "Cupos por horario", "Máximo de citas activas por persona" y
+  "Ventana futura" — cada una revela su(s) selector(es) o campo numérico solo cuando
+  está activa. Igual que Horarios, ese frame vive en el canvas "FRD - Mejoras UX ›
+  Propuesta 1" con el header de barra de progreso + selector de HU; se mantuvo el
+  header/stepper de círculos numerados ya construido por consistencia dentro del
+  wizard, y solo se tomó el contenido de la tarjeta de ese frame. El paso 4 todavía no
+  tiene frame conectado — queda como tarjeta placeholder dentro del mismo stepper.
 - **Calendarios** (`/calendarios`): tabla de usuarios con calendario habilitado
   (buscador, filtros, estado Activo/Inactivo). Incluye:
   - Wizard funcional **"Crear usuario externo"** de 4 pasos (Identificación →
