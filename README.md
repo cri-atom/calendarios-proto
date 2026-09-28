@@ -20,8 +20,17 @@ chip "Filtros", botón primario) + tabla con `AtomTag` para los estados.
   stepper de 4 pasos (Tipo de cita → Horarios → Límites → Flujo de WhatsApp). El paso 1
   ("Tipo de cita") está implementado fiel al diseño: tarjetas "Tipo de cita" (nombre,
   descripción, duración) y "Asignación" (canal, grupo, método de asignación manual/
-  automática). Los pasos 2 a 4 todavía no tienen frame en Figma — quedan como tarjetas
-  placeholder dentro del mismo stepper, listas para conectarse cuando existan.
+  automática). El paso 2 ("Horarios",
+  [frame de Figma](https://www.figma.com/design/Z6crdy6qNgAKhF8jxWMbGT/Calendarios?node-id=9070-8381))
+  también está implementado: tarjetas "Zona horaria" (selector), "Horario semanal"
+  (por día: activar/desactivar, agregar o quitar rangos horarios, resumen de días
+  activos y horas semanales, botón "Copiar de Lunes") y "Excepciones" (lista de fechas
+  puntuales con opción de agregar/quitar). Ese frame vive en un canvas distinto
+  ("FRD - Mejoras UX › Propuesta 1") que usa un header de stepper diferente (barra de
+  progreso + selector de HU); se mantuvo el header/stepper de círculos numerados ya
+  construido en el paso 1 por consistencia dentro del wizard, y solo se tomó el
+  contenido de las tarjetas de ese frame. Los pasos 3 y 4 todavía no tienen frame
+  conectado — quedan como tarjetas placeholder dentro del mismo stepper.
 - **Calendarios** (`/calendarios`): tabla de usuarios con calendario habilitado
   (buscador, filtros, estado Activo/Inactivo). Incluye:
   - Wizard funcional **"Crear usuario externo"** de 4 pasos (Identificación →
@@ -41,8 +50,8 @@ prototipo de interacción/UI para validar los flujos antes de pasar a desarrollo
 
 - Dentro de Calendarios: integración con Genesys (mapeo de agentes) y el diálogo de
   "cambios sin guardar".
-- Dentro de Tipos de cita: los pasos 2 a 4 del wizard de creación (Horarios, Límites,
-  Flujo de WhatsApp) y el flujo de edición de un tipo de cita existente.
+- Dentro de Tipos de cita: los pasos 3 y 4 del wizard de creación (Límites, Flujo de
+  WhatsApp) y el flujo de edición de un tipo de cita existente.
 - Citas agendadas: no tiene frame propio en Figma aún — cuando exista, reemplazar los
   datos mock por el diseño real con el mismo flujo de `get_design_context`.
 
