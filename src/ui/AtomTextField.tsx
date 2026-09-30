@@ -3,13 +3,14 @@ import type { InputHTMLAttributes } from "react";
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   hint?: string;
+  hideLabel?: boolean;
 }
 
-export default function AtomTextField({ label, hint, id, className = "", ...props }: Props) {
+export default function AtomTextField({ label, hint, hideLabel = false, id, className = "", ...props }: Props) {
   const inputId = id ?? label.replace(/\s+/g, "-").toLowerCase();
   return (
     <div className="flex flex-1 flex-col gap-2">
-      <label htmlFor={inputId} className="text-xs font-medium text-ink-secondary">
+      <label htmlFor={inputId} className={`text-xs font-medium text-ink-secondary ${hideLabel ? "sr-only" : ""}`}>
         {label}
       </label>
       <input

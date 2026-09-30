@@ -1,13 +1,15 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Plus, Trash2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Copy, Info, Moon, Plus, Trash2 } from "lucide-react";
 import SettingsShell from "../components/SettingsShell";
 import AtomButton from "../ui/AtomButton";
 import AtomTextField from "../ui/AtomTextField";
 import AtomSelect from "../ui/AtomSelect";
 import AtomToggle from "../ui/AtomToggle";
-import AtomCheckbox from "../ui/AtomCheckbox";
+import AtomStepper from "../ui/AtomStepper";
+import AtomIconButton from "../ui/AtomIconButton";
 import { zonasHorarias } from "../data/calendarios";
+import { tiposCitaIniciales } from "../data/tiposCita";
 
 const steps = ["Tipo de cita", "Horarios", "Límites", "Flujo de WhatsApp"] as const;
 type Step = (typeof steps)[number];
@@ -44,78 +46,33 @@ interface RangoHorario {
 }
 
 interface DiaHorario {
-  activo: boolean;
   rangos: RangoHorario[];
 }
 
 type HorarioSemanal = Record<DiaSemana, DiaHorario>;
 
 const horarioInicial: HorarioSemanal = {
-  Lunes: {
-    activo: true,
-    rangos: [
-      { id: "lun-1", inicio: "09:00", fin: "13:00" },
-      { id: "lun-2", inicio: "14:00", fin: "18:00" },
-    ],
-  },
-  Martes: {
-    activo: true,
-    rangos: [
-      { id: "mar-1", inicio: "09:00", fin: "13:00" },
-      { id: "mar-2", inicio: "14:00", fin: "18:00" },
-    ],
-  },
-  Miércoles: {
-    activo: true,
-    rangos: [
-      { id: "mie-1", inicio: "09:00", fin: "13:00" },
-      { id: "mie-2", inicio: "14:00", fin: "18:00" },
-    ],
-  },
-  Jueves: {
-    activo: true,
-    rangos: [
-      { id: "jue-1", inicio: "10:00", fin: "13:00" },
-      { id: "jue-2", inicio: "15:00", fin: "19:00" },
-    ],
-  },
-  Viernes: {
-    activo: true,
-    rangos: [{ id: "vie-1", inicio: "09:00", fin: "17:00" }],
-  },
-  Sábado: { activo: false, rangos: [] },
-  Domingo: { activo: false, rangos: [] },
+  Lunes: { rangos: [] },
+  Martes: { rangos: [] },
+  Miércoles: { rangos: [] },
+  Jueves: { rangos: [] },
+  Viernes: { rangos: [] },
+  Sábado: { rangos: [] },
+  Domingo: { rangos: [] },
 };
 
 interface Excepcion {
   id: string;
   fecha: string;
-  detalle: string;
+  rangos: RangoHorario[];
 }
 
-const excepcionesIniciales: Excepcion[] = [
-  { id: "exc-1", fecha: "18 sep", detalle: "Cerrado por inventario" },
-  { id: "exc-2", fecha: "20 sep", detalle: "10:00–14:00" },
+const excepcionesIniciales: Excepcion[] = [];
+
+const excepcionesPasadasDemo: Excepcion[] = [
+  { id: "exc-past-1", fecha: "2026-08-20", rangos: [] },
+  { id: "exc-past-2", fecha: "2026-08-05", rangos: [{ id: "exc-past-2-1", inicio: "09:00", fin: "12:00" }] },
 ];
-
-function minutosDesde(hora: string) {
-  const [h, m] = hora.split(":").map(Number);
-  return h * 60 + m;
-}
-
-function horasSemanales(horario: HorarioSemanal) {
-  const minutos = diasSemana.reduce((total, dia) => {
-    const { activo, rangos } = horario[dia];
-    if (!activo) return total;
-    const minutosDia = rangos.reduce((acc, r) => acc + Math.max(0, minutosDesde(r.fin) - minutosDesde(r.inicio)), 0);
-    return total + minutosDia;
-  }, 0);
-  return Math.round((minutos / 60) * 10) / 10;
-}
-
-function diasActivos(horario: HorarioSemanal) {
-  return diasSemana.filter((d) => horario[d].activo).length;
-}
 
 function AtomCard({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -126,49 +83,202 @@ function AtomCard({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function ScheduleCard({
-  title,
-  subtitle,
-  action,
-  children,
-}: {
-  title: string;
-  subtitle: string;
-  action?: ReactNode;
-  children: ReactNode;
-}) {
+function FieldHint({ children }: { children: ReactNode }) {
   return (
-    <div className="flex w-[720px] max-w-full flex-col gap-5 rounded-2xl border border-border bg-white p-6 shadow-[0px_2px_4px_0px_rgba(9,9,11,0.08)]">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-[28px] font-bold leading-8 tracking-[-0.56px] text-ink">{title}</p>
-          {action}
-        </div>
-        <p className="text-base text-muted">{subtitle}</p>
-      </div>
+    <div className="flex items-center gap-1.5 text-[11px] text-muted-soft">
+      <Info size={11} />
+      <span>{children}</span>
+    </div>
+  );
+}
+
+function Divider() {
+  return <div className="h-px w-full bg-border-soft" />;
+}
+
+function DisabledBanner({ label = "No disponible" }: { label?: string }) {
+  return (
+    <div className="flex h-8 w-[330px] max-w-full shrink-0 items-center gap-1.5 text-xs font-medium text-muted-soft">
+      <Moon size={14} />
+      {label}
+    </div>
+  );
+}
+
+function HorarioCard({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="flex w-[700px] max-w-full flex-col gap-4 rounded-lg border border-border bg-white p-6 shadow-[0px_2px_4px_0px_rgba(9,9,11,0.08)]">
+      <p className="text-base font-medium text-ink">{title}</p>
       {children}
     </div>
   );
 }
 
+function TimeRangeFields({
+  rango,
+  contexto,
+  onChange,
+  onRemove,
+}: {
+  rango: RangoHorario;
+  contexto: string;
+  onChange: (campo: "inicio" | "fin", valor: string) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="flex w-[330px] max-w-full shrink-0 items-center gap-3">
+      <input
+        type="time"
+        value={rango.inicio}
+        onChange={(e) => onChange("inicio", e.target.value)}
+        aria-label={`Hora de inicio, ${contexto}`}
+        className="w-[120px] shrink-0 rounded-lg border border-border bg-white px-2.5 py-1.5 text-xs text-muted outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+      />
+      <span className="shrink-0 text-xs font-medium text-ink-secondary">Hasta</span>
+      <input
+        type="time"
+        value={rango.fin}
+        onChange={(e) => onChange("fin", e.target.value)}
+        aria-label={`Hora de término, ${contexto}`}
+        className="w-[120px] shrink-0 rounded-lg border border-border bg-white px-2.5 py-1.5 text-xs text-muted outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+      />
+      <button onClick={onRemove} aria-label="Quitar rango" className="shrink-0 text-red-500 hover:text-red-600">
+        <Trash2 size={14} />
+      </button>
+    </div>
+  );
+}
+
+function TimeFrameList({
+  rangos,
+  contexto,
+  onChangeRango,
+  onRemove,
+}: {
+  rangos: RangoHorario[];
+  contexto: string;
+  onChangeRango: (id: string, campo: "inicio" | "fin", valor: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  if (rangos.length === 0) {
+    return <DisabledBanner />;
+  }
+  return (
+    <div className="flex w-[330px] max-w-full shrink-0 flex-col gap-2.5">
+      {rangos.map((r) => (
+        <TimeRangeFields
+          key={r.id}
+          rango={r}
+          contexto={contexto}
+          onChange={(campo, valor) => onChangeRango(r.id, campo, valor)}
+          onRemove={() => onRemove(r.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function DayRow({
+  dia,
+  rangos,
+  onAdd,
+  onRemove,
+  onChangeRango,
+  onCopy,
+}: {
+  dia: DiaSemana;
+  rangos: RangoHorario[];
+  onAdd: () => void;
+  onRemove: (id: string) => void;
+  onChangeRango: (id: string, campo: "inicio" | "fin", valor: string) => void;
+  onCopy: () => void;
+}) {
+  return (
+    <div className="flex w-full items-start gap-4">
+      <div className="flex min-h-8 flex-1 items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-xs font-medium text-ink-secondary">
+            {dia.slice(0, 1)}
+          </div>
+          <span className="text-sm font-medium text-ink-secondary">{dia}</span>
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <AtomIconButton icon={<Plus size={14} />} label={`Agregar horario a ${dia}`} onClick={onAdd} />
+          <AtomIconButton icon={<Copy size={14} />} label={`Copiar horario de ${dia}`} onClick={onCopy} />
+        </div>
+      </div>
+      <TimeFrameList rangos={rangos} contexto={dia} onChangeRango={onChangeRango} onRemove={onRemove} />
+    </div>
+  );
+}
+
+function ExceptionRow({
+  exc,
+  onFecha,
+  onAdd,
+  onRemove,
+  onChangeRango,
+  onCopy,
+  onRemoveExcepcion,
+}: {
+  exc: Excepcion;
+  onFecha: (fecha: string) => void;
+  onAdd: () => void;
+  onRemove: (id: string) => void;
+  onChangeRango: (id: string, campo: "inicio" | "fin", valor: string) => void;
+  onCopy: () => void;
+  onRemoveExcepcion: () => void;
+}) {
+  return (
+    <div className="flex w-full items-start gap-2">
+      <div className="flex min-h-8 flex-1 items-center justify-between gap-3">
+        <div className="flex items-center gap-1">
+          <input
+            type="date"
+            value={exc.fecha}
+            onChange={(e) => onFecha(e.target.value)}
+            className="w-[150px] shrink-0 rounded-lg border border-border bg-white px-2.5 py-1.5 text-xs text-muted outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+          />
+          <AtomIconButton
+            icon={<Trash2 size={14} />}
+            label="Quitar excepción"
+            onClick={onRemoveExcepcion}
+            className="text-red-500 hover:bg-red-50 hover:text-red-600"
+          />
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <AtomIconButton icon={<Plus size={14} />} label="Agregar horario a esta fecha" onClick={onAdd} />
+          <AtomIconButton icon={<Copy size={14} />} label="Copiar horario de esta fecha" onClick={onCopy} />
+        </div>
+      </div>
+      <TimeFrameList
+        rangos={exc.rangos}
+        contexto={exc.fecha || "esta excepción"}
+        onChangeRango={onChangeRango}
+        onRemove={onRemove}
+      />
+    </div>
+  );
+}
+
 interface LimitesState {
-  tiempoEntreCitas: { activo: boolean; antes: string; despues: string };
-  anticipacionMinima: { activo: boolean; valor: string };
-  cuposPorHorario: { activo: boolean; maximo: string };
-  maxCitasPorPersona: { activo: boolean; maximo: string };
-  ventanaFutura: { activo: boolean; valor: string };
+  buffer: { antes: string; despues: string };
+  anticipacionMinima: { activo: boolean; duracionValor: string; duracionUnidad: string };
+  diasEnElFuturo: string;
+  frecuencia: { activo: boolean; cupos: string };
+  citasActivasPorPersona: { activo: boolean; maximo: string };
 }
 
 const limitesIniciales: LimitesState = {
-  tiempoEntreCitas: { activo: true, antes: "15", despues: "15" },
-  anticipacionMinima: { activo: true, valor: "2h" },
-  cuposPorHorario: { activo: true, maximo: "4" },
-  maxCitasPorPersona: { activo: false, maximo: "1" },
-  ventanaFutura: { activo: true, valor: "60" },
+  buffer: { antes: "0", despues: "0" },
+  anticipacionMinima: { activo: false, duracionValor: "120", duracionUnidad: "minutos" },
+  diasEnElFuturo: "30",
+  frecuencia: { activo: false, cupos: "1" },
+  citasActivasPorPersona: { activo: false, maximo: "1" },
 };
 
 const opcionesMinutos = [
-  { value: "0", label: "Sin preparación" },
+  { value: "0", label: "Sin tiempo libre" },
   { value: "5", label: "5 minutos" },
   { value: "10", label: "10 minutos" },
   { value: "15", label: "15 minutos" },
@@ -177,22 +287,12 @@ const opcionesMinutos = [
   { value: "60", label: "60 minutos" },
 ];
 
-const opcionesAnticipacion = [
-  { value: "30m", label: "30 minutos de anticipación" },
-  { value: "1h", label: "1 hora de anticipación" },
-  { value: "2h", label: "2 horas de anticipación" },
-  { value: "4h", label: "4 horas de anticipación" },
-  { value: "24h", label: "24 horas de anticipación" },
+const opcionesUnidadDuracion = [
+  { value: "minutos", label: "minutos" },
+  { value: "horas", label: "horas" },
 ];
 
-const opcionesVentanaFutura = [
-  { value: "30", label: "30 días" },
-  { value: "60", label: "60 días" },
-  { value: "90", label: "90 días" },
-  { value: "180", label: "180 días" },
-];
-
-function OptionalRule({
+function RuleRow({
   title,
   subtitle,
   activo,
@@ -200,21 +300,21 @@ function OptionalRule({
   children,
 }: {
   title: string;
-  subtitle: string;
-  activo: boolean;
-  onToggle: (activo: boolean) => void;
+  subtitle?: string;
+  activo?: boolean;
+  onToggle?: (activo: boolean) => void;
   children?: ReactNode;
 }) {
   return (
-    <div className="flex w-full flex-col gap-3.5 rounded-lg border border-border-soft p-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex flex-1 flex-col gap-0.5">
-          <p className="text-base font-medium text-ink">{title}</p>
-          <p className="text-sm text-muted">{subtitle}</p>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-6 py-4">
+        <div className="flex flex-1 flex-col gap-1">
+          <p className="text-xs font-medium text-ink-secondary">{title}</p>
+          {subtitle && <p className="text-xs text-muted">{subtitle}</p>}
         </div>
-        <AtomToggle checked={activo} onChange={onToggle} label={title} />
+        {activo !== undefined && onToggle && <AtomToggle checked={activo} onChange={onToggle} label={title} />}
       </div>
-      {activo && children}
+      {(activo ?? true) && children}
     </div>
   );
 }
@@ -255,7 +355,10 @@ export default function CreateTipoCitaPage() {
   const [form, setForm] = useState<FormState>(initialForm);
   const [zonaHoraria, setZonaHoraria] = useState(zonasHorarias[0]);
   const [horario, setHorario] = useState<HorarioSemanal>(horarioInicial);
+  const [copiarHorarioTipo, setCopiarHorarioTipo] = useState("");
   const [excepciones, setExcepciones] = useState<Excepcion[]>(excepcionesIniciales);
+  const [copiarExcepcionesTipo, setCopiarExcepcionesTipo] = useState("");
+  const [mostrarExcepcionesPasadas, setMostrarExcepcionesPasadas] = useState(false);
   const [limites, setLimites] = useState<LimitesState>(limitesIniciales);
 
   const stepIndex = steps.indexOf(step);
@@ -264,11 +367,6 @@ export default function CreateTipoCitaPage() {
     if (step === "Tipo de cita") return form.nombre.trim().length > 0;
     return true;
   }, [step, form.nombre]);
-
-  const resumenSemana = useMemo(
-    () => `${diasActivos(horario)} días activos · ${horasSemanales(horario)} h semanales`,
-    [horario]
-  );
 
   const goToList = () => navigate("/tipos-de-cita");
 
@@ -288,17 +386,6 @@ export default function CreateTipoCitaPage() {
     setStep(steps[stepIndex + 1]);
   };
 
-  const toggleDia = (dia: DiaSemana) => {
-    setHorario((prev) => ({
-      ...prev,
-      [dia]: {
-        ...prev[dia],
-        activo: !prev[dia].activo,
-        rangos: !prev[dia].activo && prev[dia].rangos.length === 0 ? [{ id: `${dia}-${Date.now()}`, inicio: "09:00", fin: "18:00" }] : prev[dia].rangos,
-      },
-    }));
-  };
-
   const agregarRango = (dia: DiaSemana) => {
     setHorario((prev) => ({
       ...prev,
@@ -316,12 +403,23 @@ export default function CreateTipoCitaPage() {
     }));
   };
 
-  const copiarDeLunes = () => {
-    const base = horario.Lunes.rangos;
+  const actualizarRango = (dia: DiaSemana, id: string, campo: "inicio" | "fin", valor: string) => {
+    setHorario((prev) => ({
+      ...prev,
+      [dia]: {
+        ...prev[dia],
+        rangos: prev[dia].rangos.map((r) => (r.id === id ? { ...r, [campo]: valor } : r)),
+      },
+    }));
+  };
+
+  const copiarDeDia = (diaOrigen: DiaSemana) => {
+    const base = horario[diaOrigen].rangos;
+    if (base.length === 0) return;
     setHorario((prev) => {
       const next = { ...prev };
       diasSemana.forEach((dia) => {
-        if (dia !== "Lunes" && next[dia].activo) {
+        if (dia !== diaOrigen && next[dia].rangos.length > 0) {
           next[dia] = { ...next[dia], rangos: base.map((r, i) => ({ ...r, id: `${dia}-copia-${i}-${Date.now()}` })) };
         }
       });
@@ -329,11 +427,74 @@ export default function CreateTipoCitaPage() {
     });
   };
 
+  const aplicarCopiaHorario = (tipoId: string) => {
+    setCopiarHorarioTipo(tipoId);
+    if (!tipoId) return;
+    const base =
+      horario.Lunes.rangos.length > 0
+        ? horario.Lunes.rangos
+        : [{ id: `base-${Date.now()}`, inicio: "09:00", fin: "18:00" }];
+    setHorario(() => {
+      const next = {} as HorarioSemanal;
+      diasSemana.forEach((dia) => {
+        next[dia] = { rangos: base.map((r, i) => ({ ...r, id: `${dia}-copia-${i}-${Date.now()}` })) };
+      });
+      return next;
+    });
+  };
+
+  const puedeQuitarTodosHorarios =
+    copiarHorarioTipo !== "" || diasSemana.some((dia) => horario[dia].rangos.length > 0);
+
+  const quitarTodosHorarios = () => {
+    setHorario(horarioInicial);
+    setCopiarHorarioTipo("");
+  };
+
   const agregarExcepcion = () => {
-    setExcepciones((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), fecha: new Date().toLocaleDateString("es-CL", { day: "2-digit", month: "short" }), detalle: "Nueva excepción" },
-    ]);
+    setExcepciones((prev) => [...prev, { id: crypto.randomUUID(), fecha: "", rangos: [] }]);
+  };
+
+  const actualizarExcepcion = (id: string, cambios: Partial<Excepcion>) => {
+    setExcepciones((prev) => prev.map((exc) => (exc.id === id ? { ...exc, ...cambios } : exc)));
+  };
+
+  const agregarRangoExcepcion = (excId: string) => {
+    setExcepciones((prev) =>
+      prev.map((exc) =>
+        exc.id === excId
+          ? { ...exc, rangos: [...exc.rangos, { id: `${excId}-${Date.now()}`, inicio: "09:00", fin: "18:00" }] }
+          : exc,
+      ),
+    );
+  };
+
+  const quitarRangoExcepcion = (excId: string, rangoId: string) => {
+    setExcepciones((prev) =>
+      prev.map((exc) => (exc.id === excId ? { ...exc, rangos: exc.rangos.filter((r) => r.id !== rangoId) } : exc)),
+    );
+  };
+
+  const actualizarRangoExcepcion = (excId: string, rangoId: string, campo: "inicio" | "fin", valor: string) => {
+    setExcepciones((prev) =>
+      prev.map((exc) =>
+        exc.id === excId
+          ? { ...exc, rangos: exc.rangos.map((r) => (r.id === rangoId ? { ...r, [campo]: valor } : r)) }
+          : exc,
+      ),
+    );
+  };
+
+  const copiarDeExcepcion = (excIdOrigen: string) => {
+    const origen = excepciones.find((exc) => exc.id === excIdOrigen);
+    if (!origen || origen.rangos.length === 0) return;
+    setExcepciones((prev) =>
+      prev.map((exc) =>
+        exc.id !== excIdOrigen && exc.rangos.length > 0
+          ? { ...exc, rangos: origen.rangos.map((r, i) => ({ ...r, id: `${exc.id}-copia-${i}-${Date.now()}` })) }
+          : exc,
+      ),
+    );
   };
 
   return (
@@ -353,29 +514,8 @@ export default function CreateTipoCitaPage() {
           <p className="pl-8 text-sm text-muted">Configura cuándo puede reservarse esta experiencia.</p>
         </div>
 
-        <div className="flex shrink-0 flex-col gap-2 px-8 pb-4">
-          <p className="text-xs font-bold text-ink">
-            Paso {stepIndex + 1} de {steps.length}
-          </p>
-          <div className="h-1 w-full overflow-hidden rounded-full bg-surface-quaternary">
-            <div
-              className="h-full rounded-full bg-ink transition-all"
-              style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            {steps.map((s, i) => {
-              const active = i === stepIndex;
-              return (
-                <span
-                  key={s}
-                  className={`text-xs ${active ? "font-bold text-brand" : "text-muted"}`}
-                >
-                  {i + 1}. {s}
-                </span>
-              );
-            })}
-          </div>
+        <div className="shrink-0 px-8 pb-4">
+          <AtomStepper steps={steps} currentIndex={stepIndex} />
         </div>
 
         <div className="flex flex-1 flex-col items-center gap-4 overflow-y-auto py-4">
@@ -470,91 +610,85 @@ export default function CreateTipoCitaPage() {
 
           {step === "Horarios" && (
             <>
-              <ScheduleCard title="Zona horaria" subtitle="Se aplica a horarios, recordatorios y excepciones.">
+              <HorarioCard title="Horarios disponibles">
                 <AtomSelect label="Zona horaria" value={zonaHoraria} onChange={(e) => setZonaHoraria(e.target.value)}>
                   {zonasHorarias.map((z) => (
                     <option key={z}>{z}</option>
                   ))}
                 </AtomSelect>
-              </ScheduleCard>
 
-              <ScheduleCard
-                title="Horario semanal"
-                subtitle="Puedes agregar más de un rango por día."
-                action={
-                  <AtomButton variant="secondary" onClick={copiarDeLunes}>
-                    Copiar de otro tipo
-                  </AtomButton>
-                }
-              >
-                <p className="-mt-2 text-sm text-muted">{resumenSemana}</p>
-                <div className="flex flex-col gap-3">
-                  {diasSemana.map((dia) => {
-                    const { activo, rangos } = horario[dia];
-                    return (
-                      <div key={dia} className="flex min-h-[46px] items-center gap-3">
-                        <div className="flex w-[110px] shrink-0 items-center gap-2">
-                          <AtomCheckbox checked={activo} onChange={() => toggleDia(dia)} label={dia} />
-                          <span className={`text-sm font-medium ${activo ? "text-ink" : "text-muted-soft"}`}>
-                            {dia}
-                          </span>
-                        </div>
-                        {activo ? (
-                          <div className="flex flex-1 flex-wrap items-center gap-2">
-                            {rangos.map((r) => (
-                              <div
-                                key={r.id}
-                                className="group flex items-center gap-1.5 rounded-lg border border-border-soft bg-surface-subtle px-2.5 py-1.5 text-sm text-ink-secondary"
-                              >
-                                <span>
-                                  {r.inicio}–{r.fin}
-                                </span>
-                                <button
-                                  onClick={() => quitarRango(dia, r.id)}
-                                  aria-label="Quitar rango"
-                                  className="text-muted-soft opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-600"
-                                >
-                                  <X size={12} />
-                                </button>
-                              </div>
-                            ))}
-                            <button
-                              onClick={() => agregarRango(dia)}
-                              aria-label={`Agregar rango a ${dia}`}
-                              className="flex size-6 items-center justify-center rounded-lg text-brand hover:bg-brand-soft"
-                            >
-                              <Plus size={14} />
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="flex-1 text-sm text-muted-soft">No disponible</span>
-                        )}
-                      </div>
-                    );
-                  })}
+                <Divider />
+
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-xs font-medium text-ink-secondary">Copiar de otro tipo de cita</span>
+                  <div className="w-[439px] max-w-full">
+                    <AtomSelect value={copiarHorarioTipo} onChange={(e) => aplicarCopiaHorario(e.target.value)}>
+                      <option value="">Seleccionar tipo de cita</option>
+                      {tiposCitaIniciales.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.nombre}
+                        </option>
+                      ))}
+                    </AtomSelect>
+                  </div>
                 </div>
-              </ScheduleCard>
 
-              <ScheduleCard
-                title="Excepciones"
-                subtitle={`${excepciones.length} próximas · las fechas pasadas están ocultas.`}
-              >
-                <div className="flex flex-col gap-2">
+                <Divider />
+
+                <div className="flex w-full flex-col gap-4">
+                  {diasSemana.map((dia) => (
+                    <DayRow
+                      key={dia}
+                      dia={dia}
+                      rangos={horario[dia].rangos}
+                      onAdd={() => agregarRango(dia)}
+                      onRemove={(id) => quitarRango(dia, id)}
+                      onChangeRango={(id, campo, valor) => actualizarRango(dia, id, campo, valor)}
+                      onCopy={() => copiarDeDia(dia)}
+                    />
+                  ))}
+                </div>
+
+                {puedeQuitarTodosHorarios && (
+                  <button
+                    onClick={quitarTodosHorarios}
+                    className="inline-flex w-fit items-center gap-1.5 text-xs font-medium text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 size={14} />
+                    Quitar todos
+                  </button>
+                )}
+              </HorarioCard>
+
+              <HorarioCard title="No disponibles (opcional)">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-xs font-medium text-ink-secondary">Copiar de otro tipo de cita</span>
+                  <div className="w-[439px] max-w-full">
+                    <AtomSelect value={copiarExcepcionesTipo} onChange={(e) => setCopiarExcepcionesTipo(e.target.value)}>
+                      <option value="">Seleccionar tipo de cita</option>
+                      {tiposCitaIniciales.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.nombre}
+                        </option>
+                      ))}
+                    </AtomSelect>
+                  </div>
+                </div>
+
+                <Divider />
+
+                <div className="flex w-full flex-col gap-4">
                   {excepciones.map((exc) => (
-                    <div
+                    <ExceptionRow
                       key={exc.id}
-                      className="flex items-center gap-2 rounded-lg border border-border-soft px-3 py-2"
-                    >
-                      <span className="text-sm font-medium text-ink-secondary">{exc.fecha}</span>
-                      <span className="flex-1 text-sm text-muted">{exc.detalle}</span>
-                      <button
-                        onClick={() => setExcepciones((prev) => prev.filter((e) => e.id !== exc.id))}
-                        aria-label="Quitar excepción"
-                        className="text-muted-soft hover:text-red-600"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+                      exc={exc}
+                      onFecha={(fecha) => actualizarExcepcion(exc.id, { fecha })}
+                      onAdd={() => agregarRangoExcepcion(exc.id)}
+                      onRemove={(rangoId) => quitarRangoExcepcion(exc.id, rangoId)}
+                      onChangeRango={(rangoId, campo, valor) => actualizarRangoExcepcion(exc.id, rangoId, campo, valor)}
+                      onCopy={() => copiarDeExcepcion(exc.id)}
+                      onRemoveExcepcion={() => setExcepciones((prev) => prev.filter((e) => e.id !== exc.id))}
+                    />
                   ))}
                   {excepciones.length === 0 && (
                     <p className="rounded-lg border border-dashed border-border-soft px-3 py-4 text-center text-xs text-muted-soft">
@@ -562,153 +696,190 @@ export default function CreateTipoCitaPage() {
                     </p>
                   )}
                 </div>
-                <button
-                  onClick={agregarExcepcion}
-                  className="inline-flex items-center gap-1.5 self-start text-xs font-medium text-brand hover:underline"
-                >
-                  <Plus size={14} /> Agregar excepción
-                </button>
-              </ScheduleCard>
+
+                <div className="flex flex-col items-start gap-2">
+                  <AtomButton variant="secondary" icon={<Plus size={14} />} onClick={agregarExcepcion}>
+                    Agregar
+                  </AtomButton>
+                  <AtomButton variant="secondary" onClick={() => setMostrarExcepcionesPasadas((v) => !v)}>
+                    {mostrarExcepcionesPasadas ? "Ocultar excepciones pasadas" : "Ver excepciones pasadas"}
+                  </AtomButton>
+                  {mostrarExcepcionesPasadas && (
+                    <div className="flex w-full flex-col gap-2 pt-1">
+                      {excepcionesPasadasDemo.map((exc) => (
+                        <div
+                          key={exc.id}
+                          className="flex items-center gap-2 rounded-lg border border-dashed border-border-soft px-3 py-2 opacity-60"
+                        >
+                          <span className="text-xs font-medium text-ink-secondary">{exc.fecha}</span>
+                          <span className="flex-1 text-xs text-muted">
+                            {exc.rangos.length > 0
+                              ? exc.rangos.map((r) => `${r.inicio}–${r.fin}`).join(", ")
+                              : "No disponible"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </HorarioCard>
             </>
           )}
 
           {step === "Límites" && (
-            <ScheduleCard title="Límites de reserva" subtitle="Las reglas desactivadas no afectan la disponibilidad.">
-              <OptionalRule
-                title="Tiempo entre citas"
-                subtitle="Deja preparación antes y después de cada atención."
-                activo={limites.tiempoEntreCitas.activo}
+            <HorarioCard title="Límites">
+              <div className="flex flex-col gap-1">
+                <p className="text-xs font-medium text-ink-secondary">Tiempo libre</p>
+                <p className="text-xs text-muted">
+                  Este tiempo se bloquea antes y/o después de la cita y no queda disponible para ser agendado.
+                </p>
+              </div>
+
+              <div className="flex gap-4">
+                <AtomSelect
+                  label="Antes de la cita"
+                  value={limites.buffer.antes}
+                  onChange={(e) => setLimites((l) => ({ ...l, buffer: { ...l.buffer, antes: e.target.value } }))}
+                >
+                  {opcionesMinutos.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </AtomSelect>
+                <AtomSelect
+                  label="Después de la cita"
+                  value={limites.buffer.despues}
+                  onChange={(e) => setLimites((l) => ({ ...l, buffer: { ...l.buffer, despues: e.target.value } }))}
+                >
+                  {opcionesMinutos.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </AtomSelect>
+              </div>
+
+              <Divider />
+
+              <RuleRow
+                title="Tiempo de anticipación mínima"
+                subtitle="Con cuánto tiempo previo se puede agendar este tipo de cita."
+                activo={limites.anticipacionMinima.activo}
                 onToggle={(activo) =>
-                  setLimites((l) => ({ ...l, tiempoEntreCitas: { ...l.tiempoEntreCitas, activo } }))
+                  setLimites((l) => ({ ...l, anticipacionMinima: { ...l.anticipacionMinima, activo } }))
                 }
               >
-                <div className="flex gap-3">
-                  <AtomSelect
-                    label="Antes"
-                    value={limites.tiempoEntreCitas.antes}
+                <div className="flex items-center gap-4">
+                  <AtomTextField
+                    label="Duración"
+                    hideLabel
+                    type="number"
+                    min={0}
+                    placeholder="Ej: 120"
+                    value={limites.anticipacionMinima.duracionValor}
                     onChange={(e) =>
                       setLimites((l) => ({
                         ...l,
-                        tiempoEntreCitas: { ...l.tiempoEntreCitas, antes: e.target.value },
+                        anticipacionMinima: { ...l.anticipacionMinima, duracionValor: e.target.value },
                       }))
                     }
-                  >
-                    {opcionesMinutos.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </AtomSelect>
+                  />
                   <AtomSelect
-                    label="Después"
-                    value={limites.tiempoEntreCitas.despues}
+                    label="Unidad de anticipación mínima"
+                    hideLabel
+                    value={limites.anticipacionMinima.duracionUnidad}
                     onChange={(e) =>
                       setLimites((l) => ({
                         ...l,
-                        tiempoEntreCitas: { ...l.tiempoEntreCitas, despues: e.target.value },
+                        anticipacionMinima: { ...l.anticipacionMinima, duracionUnidad: e.target.value },
                       }))
                     }
                   >
-                    {opcionesMinutos.map((o) => (
+                    {opcionesUnidadDuracion.map((o) => (
                       <option key={o.value} value={o.value}>
                         {o.label}
                       </option>
                     ))}
                   </AtomSelect>
                 </div>
-              </OptionalRule>
+              </RuleRow>
 
-              <OptionalRule
-                title="Anticipación mínima"
-                subtitle="Evita reservas de último minuto."
-                activo={limites.anticipacionMinima.activo}
+              <Divider />
+
+              <RuleRow
+                title="Días de anticipación máxima"
+                subtitle="Con cuántos días previos se puede agendar este tipo de cita."
+              >
+                <div className="flex w-[326px] max-w-full flex-col gap-2">
+                  <AtomTextField
+                    label="Días de anticipación máxima"
+                    hideLabel
+                    type="number"
+                    min={1}
+                    max={45}
+                    placeholder="Ej: 30"
+                    value={limites.diasEnElFuturo}
+                    onChange={(e) => setLimites((l) => ({ ...l, diasEnElFuturo: e.target.value }))}
+                  />
+                  <FieldHint>Hasta 45 días como máximo</FieldHint>
+                </div>
+              </RuleRow>
+
+              <Divider />
+
+              <RuleRow
+                title="Cupos"
+                subtitle="Define cuántos cupos de este tipo de cita están disponibles en total."
+                activo={limites.frecuencia.activo}
+                onToggle={(activo) => setLimites((l) => ({ ...l, frecuencia: { ...l.frecuencia, activo } }))}
+              >
+                <div className="w-[326px] max-w-full">
+                  <AtomTextField
+                    label="Cupos"
+                    hideLabel
+                    type="number"
+                    min={1}
+                    placeholder="Ej: 1"
+                    value={limites.frecuencia.cupos}
+                    onChange={(e) =>
+                      setLimites((l) => ({ ...l, frecuencia: { ...l.frecuencia, cupos: e.target.value } }))
+                    }
+                  />
+                </div>
+              </RuleRow>
+
+              <Divider />
+
+              <RuleRow
+                title="Citas activas por contacto"
+                subtitle="Cantidad máxima de citas activas que un mismo contacto puede tener agendadas."
+                activo={limites.citasActivasPorPersona.activo}
                 onToggle={(activo) =>
-                  setLimites((l) => ({ ...l, anticipacionMinima: { ...l.anticipacionMinima, activo } }))
+                  setLimites((l) => ({
+                    ...l,
+                    citasActivasPorPersona: { ...l.citasActivasPorPersona, activo },
+                  }))
                 }
               >
-                <AtomSelect
-                  label="Reservar con al menos"
-                  value={limites.anticipacionMinima.valor}
-                  onChange={(e) =>
-                    setLimites((l) => ({
-                      ...l,
-                      anticipacionMinima: { ...l.anticipacionMinima, valor: e.target.value },
-                    }))
-                  }
-                >
-                  {opcionesAnticipacion.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </AtomSelect>
-              </OptionalRule>
-
-              <OptionalRule
-                title="Cupos por horario"
-                subtitle="Atenciones simultáneas para este tipo de cita."
-                activo={limites.cuposPorHorario.activo}
-                onToggle={(activo) =>
-                  setLimites((l) => ({ ...l, cuposPorHorario: { ...l.cuposPorHorario, activo } }))
-                }
-              >
-                <AtomTextField
-                  label="Cupos máximos"
-                  type="number"
-                  min={1}
-                  value={limites.cuposPorHorario.maximo}
-                  onChange={(e) =>
-                    setLimites((l) => ({
-                      ...l,
-                      cuposPorHorario: { ...l.cuposPorHorario, maximo: e.target.value },
-                    }))
-                  }
-                />
-              </OptionalRule>
-
-              <OptionalRule
-                title="Máximo de citas activas por persona"
-                subtitle="Limita reservas futuras del mismo contacto."
-                activo={limites.maxCitasPorPersona.activo}
-                onToggle={(activo) =>
-                  setLimites((l) => ({ ...l, maxCitasPorPersona: { ...l.maxCitasPorPersona, activo } }))
-                }
-              >
-                <AtomTextField
-                  label="Máximo permitido"
-                  type="number"
-                  min={1}
-                  value={limites.maxCitasPorPersona.maximo}
-                  onChange={(e) =>
-                    setLimites((l) => ({
-                      ...l,
-                      maxCitasPorPersona: { ...l.maxCitasPorPersona, maximo: e.target.value },
-                    }))
-                  }
-                />
-              </OptionalRule>
-
-              <OptionalRule
-                title="Ventana futura"
-                subtitle="Hasta qué fecha puede reservar el cliente."
-                activo={limites.ventanaFutura.activo}
-                onToggle={(activo) => setLimites((l) => ({ ...l, ventanaFutura: { ...l.ventanaFutura, activo } }))}
-              >
-                <AtomSelect
-                  label="Permitir reservas hasta"
-                  value={limites.ventanaFutura.valor}
-                  onChange={(e) =>
-                    setLimites((l) => ({ ...l, ventanaFutura: { ...l.ventanaFutura, valor: e.target.value } }))
-                  }
-                >
-                  {opcionesVentanaFutura.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </AtomSelect>
-              </OptionalRule>
-            </ScheduleCard>
+                <div className="w-[326px] max-w-full">
+                  <AtomTextField
+                    label="Citas activas por contacto"
+                    hideLabel
+                    type="number"
+                    min={1}
+                    placeholder="Ej: 1"
+                    value={limites.citasActivasPorPersona.maximo}
+                    onChange={(e) =>
+                      setLimites((l) => ({
+                        ...l,
+                        citasActivasPorPersona: { ...l.citasActivasPorPersona, maximo: e.target.value },
+                      }))
+                    }
+                  />
+                </div>
+              </RuleRow>
+            </HorarioCard>
           )}
 
           {step !== "Tipo de cita" && step !== "Horarios" && step !== "Límites" && (

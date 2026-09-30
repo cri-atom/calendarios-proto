@@ -3,14 +3,15 @@ import { ChevronDown } from "lucide-react";
 
 interface Props extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
+  hideLabel?: boolean;
 }
 
-export default function AtomSelect({ label, id, className = "", children, ...props }: Props) {
+export default function AtomSelect({ label, hideLabel = false, id, className = "", children, ...props }: Props) {
   const selectId = id ?? label?.replace(/\s+/g, "-").toLowerCase();
   return (
     <div className="flex flex-1 flex-col gap-2">
       {label && (
-        <label htmlFor={selectId} className="text-xs font-medium text-ink-secondary">
+        <label htmlFor={selectId} className={`text-xs font-medium text-ink-secondary ${hideLabel ? "sr-only" : ""}`}>
           {label}
         </label>
       )}
